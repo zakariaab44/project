@@ -1,0 +1,48 @@
+name: 
+
+on: 
+  push:
+    branches:
+      - main
+    path:
+      - src/**
+    
+default:
+  run:
+    shell: bash
+
+env:
+  AWS-REGION: us-east-1
+  ECR_REPO: node_app
+
+jobs: 
+  push:
+    name: Push docker image   
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout github repository
+        uses: actions/checkout@v4
+          with:
+            fetch-depth: 1
+      - name: Authenticate to AWS 
+        uses: aws-actions/configure-aws-credential@v4
+        with:
+          aws-access-key-id: ${{ secrets.aws-access-key-id  }}
+          aws-secret-access-key: ${{ secrets.aws-secret-access-key  }}
+          aws-region: ${{ env.aws-region  }}
+
+      - name: Authenticate to ECR
+        run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 616864133429.dkr.ecr.us-east-1.amazonaws.com
+      
+      - name: Generate docker image tag
+        run: echo "TAG = ${{ githubrun_id }}.${{ github.run_number }}.${{ github.retention_days  }}" > GITHUB_ENV
+
+      - name: build docker image
+        run: docker build -t web:${{ env.TAG }} .
+
+      - name: 
+        run: docker tag node_app:${{env.TAG }} 616864133429.dkr.ecr.us-east-1.amazonaws.com/${{ ECR_REPO }}:${{ env.TAG  }}
+
+      - name: Push docker image to ECR
+        run: docker push 616864133429.dkr.ecr.us-east-1.amazonaws.com/${{ ECR_REPO }}:${{ env.TAG  }}
