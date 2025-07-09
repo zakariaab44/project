@@ -48,7 +48,7 @@ jobs:
       - name: Send File To Github
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif-file: 'trivy-result.sarif'
+          sarif_file: 'trivy-result.sarif'
 
       - name: Tag docker image
         run: docker tag  web:${{env.TAG }} 616864133429.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPO }}:${{ env.TAG  }}
