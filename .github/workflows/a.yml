@@ -43,3 +43,21 @@ jobs:
 
       - name: Push docker image to ECR
         run: docker push 616864133429.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPO }}:${{ env.TAG  }}
+
+  deploy:
+    name: Push docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup sevrer
+        uses: JimCronqvist/action-ssh@7737f1192ddd8376686e9d6354dea44592c942bf
+        with:
+        privateKey: ${{ secret.PRIVATE_KEY }}
+        host: ${{ secrets.HOST }}
+        command: |
+          export AWS_ACCESS_KEY_ID=${{ secret.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          eport AWS_DEFAULT_REGION=${{ env.AWS_REGION }}
+          sudo docker pull 616864133429.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPO }}:${{ env.TAG  }}
+          sudo docker rm -f web_app || true
+          sudo docker run --name web_app -p 80:80 -d web:${{env.TAG }}
