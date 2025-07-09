@@ -8,6 +8,10 @@ on:
       - src/**
   workflow_dispatch:
 
+permissions:
+  contents: read
+  security-events: write # required for upload_safarito work
+
 env:
   AWS_REGION: us-east-1
   ECR_REPO: node_app
